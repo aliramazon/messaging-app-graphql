@@ -10,19 +10,64 @@ app.use(cors());
 const schema = gql`
     type Query {
         me: User
+        user(id: ID!): User
+        users: [User!]!
     }
 
     type User {
+        id: ID!
         username: String!
+        email: String!
+        skills: [Skill!]!
+    }
+
+    enum SkillProficiency {
+        Advanced
+        Intermediate
+        Beginner
+    }
+
+    type Skill {
+        name: String!
+        proficiency: SkillProficiency
     }
 `;
+
+const users = {
+    1: {
+        id: "1",
+        username: "Ali Ramazon",
+        email: "safarnov@gmail.com",
+        skills: [
+            {
+                name: "React",
+                proficiency: "Advanced"
+            }
+        ]
+    },
+    2: {
+        id: "2",
+        username: "John Smith",
+        email: "jsmith@gmail.com",
+        skills: [
+            {
+                name: "Node",
+                proficiency: "Advanced"
+            }
+        ]
+    }
+};
 
 const resolvers = {
     Query: {
         me: () => {
-            return {
-                username: "Ali Ramazon"
-            };
+            return users[1];
+        },
+        user: (parent, { id }) => {
+            return users[id];
+        },
+        users: () => {
+            return Object.values(users);
         }
     }
 };

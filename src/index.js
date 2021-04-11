@@ -7,11 +7,52 @@ const app = express();
 
 app.use(cors());
 
+const users = {
+    1: {
+        id: "1",
+        username: "Ali Ramazon",
+        email: "safarnov@gmail.com",
+        skills: [
+            {
+                name: "React",
+                proficiency: "Advanced"
+            }
+        ],
+        messageIds: [1]
+    },
+    2: {
+        id: "2",
+        username: "John Smith",
+        email: "jsmith@gmail.com",
+        skills: [
+            {
+                name: "Node",
+                proficiency: "Advanced"
+            }
+        ],
+        messageIds: [2]
+    }
+};
+const messages = {
+    1: {
+        id: "1",
+        text: "Hello World",
+        userId: "1"
+    },
+    2: {
+        id: "2",
+        text: "By World",
+        userId: 2
+    }
+};
+
 const schema = gql`
     type Query {
         me: User
         user(id: ID!): User
         users: [User!]!
+        messages: [Message!]
+        message(id: ID!): Message!
     }
 
     type User {
@@ -19,6 +60,13 @@ const schema = gql`
         username: String!
         email: String!
         skills: [Skill!]!
+        messages: [Message!]!
+    }
+
+    type Message {
+        id: ID!
+        text: String!
+        user: User!
     }
 
     enum SkillProficiency {
@@ -33,31 +81,6 @@ const schema = gql`
     }
 `;
 
-const users = {
-    1: {
-        id: "1",
-        username: "Ali Ramazon",
-        email: "safarnov@gmail.com",
-        skills: [
-            {
-                name: "React",
-                proficiency: "Advanced"
-            }
-        ]
-    },
-    2: {
-        id: "2",
-        username: "John Smith",
-        email: "jsmith@gmail.com",
-        skills: [
-            {
-                name: "Node",
-                proficiency: "Advanced"
-            }
-        ]
-    }
-};
-
 const resolvers = {
     Query: {
         me: (parent, args, { me }) => {
@@ -68,12 +91,25 @@ const resolvers = {
         },
         users: () => {
             return Object.values(users);
-        }
+        },
+
+        messages: () => Object.values(messages),
+        message: (parent, { id }) => messages[id]
     },
 
     User: {
-        username: (user) => {
-            return user.username.split(" ")[0];
+        messages: (user) => {
+            // return Object.values(messages).filter(
+            //     (message) => message.userId === user.id
+            // );
+
+            return user.messageIds.map((messageId) => messages[messageId]);
+        }
+    },
+
+    Message: {
+        user: (message) => {
+            return users[message.userId];
         }
     }
 };

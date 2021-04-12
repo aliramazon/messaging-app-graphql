@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { ApolloServer, gql } from "apollo-server-express";
+import { v4 as uuidv4 } from "uuid";
 import "dotenv/config";
 
 const app = express();
@@ -9,7 +10,7 @@ app.use(cors());
 
 const users = {
     1: {
-        id: "1",
+        id: 1,
         username: "Ali Ramazon",
         email: "safarnov@gmail.com",
         skills: [
@@ -21,7 +22,7 @@ const users = {
         messageIds: [1]
     },
     2: {
-        id: "2",
+        id: 2,
         username: "John Smith",
         email: "jsmith@gmail.com",
         skills: [
@@ -33,14 +34,14 @@ const users = {
         messageIds: [2]
     }
 };
-const messages = {
+let messages = {
     1: {
-        id: "1",
+        id: 1,
         text: "Hello World",
-        userId: "1"
+        userId: 1
     },
     2: {
-        id: "2",
+        id: 2,
         text: "By World",
         userId: 2
     }
@@ -53,6 +54,12 @@ const schema = gql`
         users: [User!]!
         messages: [Message!]
         message(id: ID!): Message!
+    }
+
+    type Mutation {
+        createMessage(text: String!): Message!
+        deleteMessage(id: ID!): Boolean!
+        updateMessage(id: ID!, text: String!): Message!
     }
 
     type User {
@@ -95,6 +102,37 @@ const resolvers = {
 
         messages: () => Object.values(messages),
         message: (parent, { id }) => messages[id]
+    },
+
+    Mutation: {
+        createMessage: (parent, { text }, { me }) => {
+            const id = uuidv4();
+            const message = {
+                id,
+                text,
+                userId: me.id
+            };
+
+            messages[id] = message;
+            users[me.id].messageIds.push(id);
+
+            return message;
+        },
+
+        deleteMessage: (parent, { id }, { me }) => {
+            const { [id]: message, ...rest } = messages;
+            if (!message) return false;
+
+            const messageIdIdx = users[me.id].messageIds.indexOf(id.toString());
+            users[me.id].messageIds.splice(messageIdIdx, 1);
+            messages = rest;
+            return true;
+        },
+
+        updateMessage: (parent, { id, text }) => {
+            messages[id].text = text;
+            return messages[id];
+        }
     },
 
     User: {

@@ -1,24 +1,22 @@
 const userResolvers = {
     Query: {
-        me: (parent, args, { me }) => {
-            return me;
+        me: async (parent, args, { models, me }) => {
+            return await models.User.findByPk(me.id);
         },
-        user: (parent, { id }) => {
-            return users[id];
+        user: async (parent, { id }, { models }) => {
+            return await models.User.findByPk(id);
         },
-        users: (parent, args, { models }) => {
-            return Object.values(models.users);
+        users: async (parent, args, { models }) => {
+            return await models.User.findAll();
         }
     },
     User: {
-        messages: (user, args, { models }) => {
-            // return Object.values(messages).filter(
-            //     (message) => message.userId === user.id
-            // );
-
-            return user.messageIds.map(
-                (messageId) => models.messages[messageId]
-            );
+        messages: async (user, args, { models }) => {
+            return await models.Message.findAll({
+                where: {
+                    userId: user.id
+                }
+            });
         }
     }
 };

@@ -5,7 +5,7 @@ import "dotenv/config";
 
 import schema from "./schema";
 import resolvers from "./resolvers";
-import models from "./models";
+import models, { sequelize } from "./models";
 
 const app = express();
 
@@ -14,16 +14,56 @@ app.use(cors());
 const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
-    context: {
+    context: async () => ({
         models,
-        me: models.users[1]
-    }
+        me: await models.User.findByLogin("ali")
+    })
 });
 
 server.applyMiddleware({ app, path: "/graphql" });
 
 const PORT = process.env.PORT || 8000;
 
-app.listen({ port: PORT }, () => {
-    console.log(`Apollo Server on https://localhost:${PORT}/graphql`);
+const eraseDatabaseOnSync = true;
+const createUsersWithMessages = async () => {
+    await models.User.create(
+        {
+            username: "ali",
+            messages: [
+                {
+                    text: "Learning GQL"
+                }
+            ]
+        },
+        {
+            include: [models.Message]
+        }
+    );
+
+    await models.User.create(
+        {
+            username: "sultan",
+            messages: [
+                {
+                    text: "hello halturiy"
+                },
+                {
+                    text: "Mission style started"
+                }
+            ]
+        },
+        {
+            include: [models.Message]
+        }
+    );
+};
+
+sequelize.sync({ force: eraseDatabaseOnSync }).then(() => {
+    if (eraseDatabaseOnSync) {
+        createUsersWithMessages();
+    }
+
+    app.listen({ port: PORT }, () => {
+        console.log(`Apollo Server on https://localhost:${PORT}/graphql`);
+    });
 });

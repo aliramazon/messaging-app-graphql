@@ -11,20 +11,20 @@ const userSchema = gql`
         id: ID!
         username: String!
         email: String!
-        skills: [Skill!]!
+        # skills: [Skill!]!
         messages: [Message!]!
     }
 
-    enum SkillProficiency {
-        Advanced
-        Intermediate
-        Beginner
-    }
+    # enum SkillProficiency {
+    #     Advanced
+    #     Intermediate
+    #     Beginner
+    # }
 
-    type Skill {
-        name: String!
-        proficiency: SkillProficiency
-    }
+    # type Skill {
+    #     name: String!
+    #     proficiency: SkillProficiency
+    # }
 `;
 
 export default userSchema;

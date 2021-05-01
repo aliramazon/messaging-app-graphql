@@ -26,7 +26,8 @@ const server = new ApolloServer({
     },
     context: async () => ({
         models,
-        me: await models.User.findByLogin("ali")
+        me: await models.User.findByLogin("ali"),
+        secret: process.env.SECRET
     })
 });
 
@@ -39,6 +40,8 @@ const createUsersWithMessages = async () => {
     await models.User.create(
         {
             username: "ali",
+            email: "hello@ali.com",
+            password: "password123",
             messages: [
                 {
                     text: "Learning GQL"
@@ -53,6 +56,8 @@ const createUsersWithMessages = async () => {
     await models.User.create(
         {
             username: "sultan",
+            email: "hello@sultan.com",
+            password: "password1234",
             messages: [
                 {
                     text: "hello halturiy"

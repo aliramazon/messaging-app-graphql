@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer, AuthenticationError } from "apollo-server-express";
+import jwt from "jsonwebtoken";
 import "dotenv/config";
 
 import schema from "./schema";
@@ -10,6 +11,20 @@ import models, { sequelize } from "./models";
 const app = express();
 
 app.use(cors());
+
+const getMe = async (req) => {
+    const token = req.headers["x-token"];
+
+    if (token) {
+        try {
+            return await jwt.verify(token, process.env.SECRET);
+        } catch (e) {
+            throw new AuthenticationError(
+                "Your session expired. Sign in again"
+            );
+        }
+    }
+};
 
 const server = new ApolloServer({
     typeDefs: schema,
@@ -24,11 +39,13 @@ const server = new ApolloServer({
             message
         };
     },
-    context: async () => ({
-        models,
-        me: await models.User.findByLogin("ali"),
-        secret: process.env.SECRET
-    })
+    context: async ({ req }) => {
+        return {
+            models,
+            me: await getMe(req),
+            secret: process.env.SECRET
+        };
+    }
 });
 
 server.applyMiddleware({ app, path: "/graphql" });

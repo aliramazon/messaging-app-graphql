@@ -11,8 +11,6 @@ const sequelize = new Sequelize(
     }
 );
 
-console.log(process.env.DATABASE);
-
 const models = {
     User: user(sequelize, Sequelize),
     Message: message(sequelize, Sequelize)

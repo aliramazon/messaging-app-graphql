@@ -63,7 +63,8 @@ const createUsersWithMessages = async () => {
                 {
                     text: "Learning GQL"
                 }
-            ]
+            ],
+            role: "ADMIN"
         },
         {
             include: [models.Message]

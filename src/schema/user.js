@@ -11,6 +11,8 @@ const userSchema = gql`
         signUp(username: String!, email: String!, password: String): Token!
 
         signIn(login: String!, password: String!): Token!
+
+        deleteUser(id: ID!): Boolean!
     }
 
     type User {
@@ -19,6 +21,7 @@ const userSchema = gql`
         email: String!
         # skills: [Skill!]!
         messages: [Message!]!
+        role: UserRoles
     }
 
     type Token {
@@ -35,6 +38,11 @@ const userSchema = gql`
     #     name: String!
     #     proficiency: SkillProficiency
     # }
+
+    enum UserRoles {
+        ADMIN
+        BASIC
+    }
 `;
 
 export default userSchema;

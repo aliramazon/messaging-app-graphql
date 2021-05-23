@@ -53,7 +53,7 @@ server.applyMiddleware({ app, path: "/graphql" });
 const PORT = process.env.PORT || 8000;
 
 const eraseDatabaseOnSync = true;
-const createUsersWithMessages = async () => {
+const createUsersWithMessages = async (date) => {
     await models.User.create(
         {
             username: "ali",
@@ -61,7 +61,8 @@ const createUsersWithMessages = async () => {
             password: "password123",
             messages: [
                 {
-                    text: "Learning GQL"
+                    text: "Learning GQL",
+                    createdAt: date.setSeconds(date.getSeconds() + 1)
                 }
             ],
             role: "ADMIN"
@@ -78,10 +79,12 @@ const createUsersWithMessages = async () => {
             password: "password1234",
             messages: [
                 {
-                    text: "hello halturiy"
+                    text: "hello halturiy",
+                    createdAt: date.setSeconds(date.getSeconds() + 1)
                 },
                 {
-                    text: "Mission style started"
+                    text: "Mission style started",
+                    createdAt: date.setSeconds(date.getSeconds() + 1)
                 }
             ]
         },
@@ -93,7 +96,7 @@ const createUsersWithMessages = async () => {
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(() => {
     if (eraseDatabaseOnSync) {
-        createUsersWithMessages();
+        createUsersWithMessages(new Date());
     }
 
     app.listen({ port: PORT }, () => {

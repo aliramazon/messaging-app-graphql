@@ -2,7 +2,7 @@ import { gql } from "apollo-server-express";
 
 const messageSchema = gql`
     extend type Query {
-        messages: [Message!]
+        messages(cursor: String, limit: Int): [Message!]!
         message(id: ID!): Message!
     }
 

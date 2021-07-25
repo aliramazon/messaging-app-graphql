@@ -2,6 +2,9 @@ import { combineResolvers } from "graphql-resolvers";
 import { Sequelize } from "sequelize";
 import { isAuthenticated, isMessageOwner } from "./auth";
 
+const encodeCursor = (string) => Buffer.from(string).toString("base64");
+const decodeCursor = (string) =>
+    Buffer.from(string, "base64").toString("ascii");
 const messageResolvers = {
     Query: {
         messages: async (parent, { cursor, limit = 100 }, { models }) => {
@@ -9,16 +12,29 @@ const messageResolvers = {
                 ? {
                       where: {
                           createdAt: {
-                              [Sequelize.Op.lt]: cursor
+                              [Sequelize.Op.lt]: decodeCursor(cursor)
                           }
                       }
                   }
                 : {};
-            return await models.Message.findAll({
+            const messages = await models.Message.findAll({
                 order: [["createdAt", "DESC"]],
-                limit,
+                limit: limit + 1,
                 ...cursorOptions
             });
+            let hasNextPage = messages.length > limit;
+            let edges = hasNextPage ? messages.slice(0, -1) : messages;
+            return {
+                edges,
+                pageInfo: {
+                    endCursor: hasNextPage
+                        ? encodeCursor(
+                              edges[edges.length - 1].createdAt.toString()
+                          )
+                        : null,
+                    hasNextPage
+                }
+            };
         },
         message: async (parent, { id }, { models }) => {
             return await models.Message.findByPk(id);

@@ -28,6 +28,14 @@ const messageSchema = gql`
         user: User!
         createdAt: Date!
     }
+
+    extend type Subscription {
+        messageCreated: MessageCreated
+    }
+
+    type MessageCreated {
+        message: Message!
+    }
 `;
 
 export default messageSchema;

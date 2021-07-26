@@ -6,8 +6,9 @@
     "license": "MIT",
     "private": false,
     "scripts": {
-        "start": "nodemon --exec babel-node src/index.js",
-        "test-server": "TEST_DATABASE=messaging-app-gql-test yarn start",
+        "start:dev": "nodemon --exec babel-node src/index.js",
+        "start": "node --exec babel-node src/index.js",
+        "test-server": "TEST_DATABASE=messaging-app-gql-test yarn start:dev",
         "test": "mocha --require @babel/register 'src/**/*.spec.js'"
     },
     "devDependencies": {

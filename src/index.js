@@ -1,15 +1,16 @@
 import express from "express";
+
 import cors from "cors";
 import { ApolloServer, AuthenticationError } from "apollo-server-express";
 import jwt from "jsonwebtoken";
 import http from "http";
 import DataLoader from "dataloader";
-import Sequelize from "sequelize";
-import "dotenv/config";
 
+import "dotenv/config";
+import models, { sequelize } from "./models";
 import schema from "./schema";
 import resolvers from "./resolvers";
-import models, { sequelize } from "./models";
+import loaders from "./loaders";
 
 const app = express();
 
@@ -29,18 +30,6 @@ const getMe = async (req) => {
     }
 };
 
-const batchUsers = async (keys, models) => {
-    const users = await models.User.findAll({
-        where: {
-            id: {
-                [Sequelize.Op.in]: keys
-            }
-        }
-    });
-
-    return keys.map((key) => users.find((user) => user.id === key));
-};
-
 const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
@@ -55,7 +44,15 @@ const server = new ApolloServer({
         };
     },
     context: async ({ req, connection }) => {
-        if (connection) return { models };
+        if (connection)
+            return {
+                models,
+                loaders: {
+                    user: new DataLoader((keys) =>
+                        loaders.user.batchUsers(keys, models)
+                    )
+                }
+            };
 
         if (req) {
             return {
@@ -63,7 +60,9 @@ const server = new ApolloServer({
                 me: await getMe(req),
                 secret: process.env.SECRET,
                 loaders: {
-                    user: new DataLoader((keys) => batchUsers(keys, models))
+                    user: new DataLoader((keys) =>
+                        loaders.user.batchUsers(keys, models)
+                    )
                 }
             };
         }

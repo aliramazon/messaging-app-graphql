@@ -25,6 +25,7 @@ const messageResolvers = {
             });
             let hasNextPage = messages.length > limit;
             let edges = hasNextPage ? messages.slice(0, -1) : messages;
+
             return {
                 edges,
                 pageInfo: {
@@ -69,8 +70,8 @@ const messageResolvers = {
     },
 
     Message: {
-        user: async (message, args, { models }) => {
-            return await models.User.findByPk(message.userId);
+        user: async (message, args, { loaders }) => {
+            return await loaders.user.load(message.userId);
         }
     },
 

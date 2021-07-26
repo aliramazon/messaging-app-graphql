@@ -35,7 +35,6 @@ class UserApi {
     }
 
     async deleteUser(variables, token) {
-        console.log("Delete me");
         return axios.post(
             this.url,
             {

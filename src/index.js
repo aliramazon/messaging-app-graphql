@@ -3,6 +3,8 @@ import cors from "cors";
 import { ApolloServer, AuthenticationError } from "apollo-server-express";
 import jwt from "jsonwebtoken";
 import http from "http";
+import DataLoader from "dataloader";
+import Sequelize from "sequelize";
 import "dotenv/config";
 
 import schema from "./schema";
@@ -27,6 +29,18 @@ const getMe = async (req) => {
     }
 };
 
+const batchUsers = async (keys, models) => {
+    const users = await models.User.findAll({
+        where: {
+            id: {
+                [Sequelize.Op.in]: keys
+            }
+        }
+    });
+
+    return keys.map((key) => users.find((user) => user.id === key));
+};
+
 const server = new ApolloServer({
     typeDefs: schema,
     resolvers,
@@ -47,7 +61,10 @@ const server = new ApolloServer({
             return {
                 models,
                 me: await getMe(req),
-                secret: process.env.SECRET
+                secret: process.env.SECRET,
+                loaders: {
+                    user: new DataLoader((keys) => batchUsers(keys, models))
+                }
             };
         }
     }

@@ -117,9 +117,10 @@ const createUsersWithMessages = async (date) => {
 };
 
 const isTestEnv = !!process.env.TEST_DATABASE;
+const isProdEnv = !!process.env.DATABASE_URL;
 
-sequelize.sync({ force: isTestEnv }).then(() => {
-    if (isTestEnv) {
+sequelize.sync({ force: isTestEnv || isProdEnv }).then(() => {
+    if (isTestEnv || isProdEnv) {
         createUsersWithMessages(new Date());
     }
 
